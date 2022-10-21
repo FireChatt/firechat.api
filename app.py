@@ -30,7 +30,7 @@ def get_id(table: str) -> int:
             cur.execute('SELECT MAX(id) AS id FROM %s' % table)
             sql_column = cur.fetchone()
             
-            if sql_column is None: sql_column = 0
+            if sql_column[0] is None: sql_column[0] = 0
             
             return int(sql_column[0]) + 1
 

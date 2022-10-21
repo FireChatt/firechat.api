@@ -29,10 +29,9 @@ def get_id(table: str) -> int:
         with conn.cursor() as cur:
             cur.execute('SELECT MAX(id) AS id FROM %s' % table)
             sql_column = cur.fetchone()
+            res = sql_column[0] if not sql_column[0] is None else 0
             
-            if sql_column[0] is None: sql_column[0] = 0
-            
-            return int(sql_column[0]) + 1
+            return int(res) + 1
 
 @app.route("/channels", methods=['GET'])
 def channels_get():

@@ -7,8 +7,11 @@ DATABASE_URL = os.environ['DATABASE_URL']
 conn_dict = psycopg.conninfo.conninfo_to_dict(DATABASE_URL)
 
 def _script(filename, cursor):
-    with open(filename, 'r', encoding='utf-8') as f:
-        cursor.execute(f.read())
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            cursor.execute(f.read())
+    except:
+        pass
 
 with psycopg.connect(**conn_dict) as first_conn:
     with first_conn.cursor() as first_cur:

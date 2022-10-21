@@ -55,7 +55,7 @@ def channels_post():
     
     with psycopg.connect(**conn_dict) as conn:
         with conn.cursor() as cur:
-            cur.execute("INSERT INTO channels VALUES (%d,'%s')" % (id_of_channel,pack(data)))
+            cur.execute("INSERT INTO channels VALUES (%d,%s)" % (id_of_channel,pack(data)))
 
             conn.commit()
    

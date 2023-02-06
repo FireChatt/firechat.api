@@ -37,13 +37,14 @@ def execute_script(filename: str, *params):
 execute_script('tables/users')
 
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
 @app.route('/', methods=[ 'GET' ])
 def root():
-    return select('SELECT * FROM users', 'a')
+    rows = select('SELECT * FROM users', 'a')
+    return jsonify(rows)
 
 if __name__ == '__main__':
     app.run(debug=True)

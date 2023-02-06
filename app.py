@@ -44,6 +44,7 @@ app = Flask(__name__)
 @app.route('/', methods=[ 'GET' ])
 def root():
     rows = select('SELECT * FROM users', 'a')
+    print(rows)
     return jsonify(rows)
 
 if __name__ == '__main__':

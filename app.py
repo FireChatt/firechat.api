@@ -1,65 +1,53 @@
-from flask import Flask, request, jsonify
-import psycopg
-from erlpack import pack, unpack
-import os
+from os import environ
 
-DATABASE_URL = os.environ['DATABASE_URL']
-conn_dict = psycopg.conninfo.conninfo_to_dict(DATABASE_URL)
+HOST, USER, PASS = environ['HOST'], environ['USER'], environ['PASS']
 
-def _script(filename, cursor):
+from mysql.connector import connect, Error
+from typing import TYPE_CHECKING, Literal
+
+if TYPE_CHECKING:
+    from mysql.connector.cursor import CursorBase
+
+def execute(sql: str, *params) -> 'CursorBase':
+    sql = sql.format(*params)
+    c = None
+
     try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            cursor.execute(f.read())
-    except:
-        pass
+        with connect(
+            host=HOST,
+            user=USER,
+            password=PASS,
+        ) as connection:
+            with connection.cursor() as cursor:
+                cursor.execute(sql)
+                c = cursor
+        return c
+    except Error as e:
+        print(e)
 
-with psycopg.connect(**conn_dict) as first_conn:
-    with first_conn.cursor() as first_cur:
-        _script('sql/table_channels.sql', first_cur)
-            
-        first_conn.commit()
+def select(sql: str, mode: Literal['a', 'o'], *params) -> 'tuple' | 'list[tuple]' | None:
+    c = execute(sql, *params)
+    if mode is 'a':
+        return c.fetchall()
+    elif mode is 'o':
+        return c.fetchone()
+
+def execute_script(filename: str, *params):
+    sql = ''
+    with open(f'sql/{filename}.sql', 'r', encoding='utf-8') as f:
+        sql = f.read()
+    execute(sql, *params)
+
+execute_script('tables/users')
+
+
+from flask import Flask, request
 
 app = Flask(__name__)
 
-def get_standart_json_error(message: str, code: int):
-    return {"errors": {str(code): {"message": message}}}
-
-def get_id(table: str) -> int:
-     with psycopg.connect(**conn_dict) as conn:
-        with conn.cursor() as cur:
-            cur.execute('SELECT MAX(id) AS id FROM %s' % table)
-            sql_column = cur.fetchone()
-            res = sql_column[0] if not sql_column[0] is None else 0
-            
-            return int(res) + 1
-
-@app.route("/channels", methods=['GET'])
-def channels_get():
-    result = {}
-    
-    with psycopg.connect(**conn_dict) as conn:
-        with conn.cursor() as cur:
-            cur.execute('SELECT * FROM channels')
-            fetched = cur.fetchone()
-            
-            result = unpack(fetched[1])
-    
-    return jsonify(result)
-
-@app.route("/channels", methods=['POST'])
-def channels_post():
-    data: dict = request.json
-
-    id_of_channel = get_id('channels')
-    data.setdefault('id', id_of_channel)
-    
-    with psycopg.connect(**conn_dict) as conn:
-        with conn.cursor() as cur:
-            cur.execute("INSERT INTO channels VALUES (%d,%s)" % (id_of_channel,pack(data).decode('utf-8')))
-
-            conn.commit()
-   
-    return jsonify(data)
+@app.route('/', methods=[ 'GET' ])
+def root():
+    return select('SELECT * FROM users', 'a')
 
 if __name__ == '__main__':
     app.run(debug=True)

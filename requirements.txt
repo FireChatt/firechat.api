@@ -1,4 +1,3 @@
 flask
 gunicorn
-psycopg[binary,pool]
-erlpack
+mysql-connector-python

@@ -25,7 +25,7 @@ def execute(sql: str, *params) -> 'CursorBase':
     except Error as e:
         print(e)
 
-def select(sql: str, mode: Literal['a', 'o'], *params) -> 'tuple' | 'list[tuple]' | None:
+def select(sql: str, mode: Literal['a', 'o'], *params) -> tuple | list[tuple] | None:
     c = execute(sql, *params)
     if mode is 'a':
         return c.fetchall()

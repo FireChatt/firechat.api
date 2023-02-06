@@ -3,7 +3,6 @@ from os import environ
 HOST, USER, PASS = environ['HOST'], environ['USER'], environ['PASS']
 
 from mysql.connector import connect, Error
-from typing import Literal
 
 def execute(sql: str, *params):
     sql = sql.format(*params)
@@ -22,7 +21,7 @@ def execute(sql: str, *params):
     except Error as e:
         print(e)
 
-def select(sql: str, mode: Literal['a', 'o'], *params):
+def select(sql: str, mode: str, *params):
     c = execute(sql, *params)
     if mode is 'a':
         return c.fetchall()

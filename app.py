@@ -3,7 +3,7 @@ from os import environ
 HOST, USER, PASS = environ['HOST'], environ['USER'], environ['PASS']
 
 from mysql.connector import connect, Error
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Union
 
 if TYPE_CHECKING:
     from mysql.connector.cursor import CursorBase
@@ -25,7 +25,7 @@ def execute(sql: str, *params) -> 'CursorBase':
     except Error as e:
         print(e)
 
-def select(sql: str, mode: Literal['a', 'o'], *params) -> tuple | list[tuple] | None:
+def select(sql: str, mode: Literal['a', 'o'], *params) -> Union[tuple, list[tuple], None]:
     c = execute(sql, *params)
     if mode is 'a':
         return c.fetchall()
